@@ -7,7 +7,7 @@ services:
       - "9000:9000"   # HTTP - for LAN/VPN access
       - "9443:9443"   # HTTPS - optional, uses self-signed cert
     volumes:
-      - /run/podman/podman.sock:/var/run/docker.sock:Z
+      - /run/user/1000/podman/podman.sock:/var/run/docker.sock:Z
       - portainer_data:/data
 
 volumes:
