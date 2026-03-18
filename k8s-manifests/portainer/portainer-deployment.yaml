@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portainer
+  namespace: portainer
+  labels:
+    app: portainer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: portainer
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: portainer
+    spec:
+      serviceAccountName: portainer-sa
+      containers:
+        - name: portainer
+          image: portainer/portainer-ce:latest
+          ports:
+            - name: https-ui
+              containerPort: 9443
+              protocol: TCP
+            - name: http-ui
+              containerPort: 9000
+              protocol: TCP
+            - name: edge-agent
+              containerPort: 8000
+              protocol: TCP
+          volumeMounts:
+            - name: portainer-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: portainer-data
+          persistentVolumeClaim:
+            claimName: portainer-data
